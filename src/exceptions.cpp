@@ -1,8 +1,8 @@
-#include <iodrivers_base/Exceptions.hpp>
+#include <ros_driver_base/exceptions.hpp>
 #include <errno.h>
 #include <string.h>
 
-using namespace iodrivers_base;
+using namespace ros_driver_base;
 
 UnixError::UnixError(std::string const& desc)
     : std::runtime_error(desc + ": " + strerror(errno)), error(errno) {}

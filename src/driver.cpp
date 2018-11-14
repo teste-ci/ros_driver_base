@@ -1,5 +1,5 @@
-#include <iodrivers_base/Driver.hpp>
-#include <iodrivers_base/Timeout.hpp>
+#include <ros_driver_base/driver.hpp>
+#include <ros_driver_base/timeout.hpp>
 
 #include <errno.h>
 #include <sys/types.h>
@@ -23,9 +23,9 @@
 #include <netdb.h>
 
 #include <boost/lexical_cast.hpp>
-#include <iodrivers_base/IOStream.hpp>
-#include <iodrivers_base/IOListener.hpp>
-#include <iodrivers_base/TestStream.hpp>
+#include <ros_driver_base/io_stream.hpp>
+#include <ros_driver_base/io_listener.hpp>
+#include <ros_driver_base/test_stream.hpp>
 
 #ifdef __gnu_linux__
 #include <linux/serial.h>
@@ -43,7 +43,7 @@
 #endif
 
 using namespace std;
-using namespace iodrivers_base;
+using namespace ros_driver_base;
 
 string Driver::printable_com(std::string const& str)
 { return printable_com(str.c_str(), str.size()); }
@@ -87,7 +87,7 @@ string Driver::binary_com(char const* str, size_t str_size)
 Driver::Driver(int max_packet_size, bool extract_last)
     : internal_buffer(new uint8_t[max_packet_size]), internal_buffer_size(0)
     , MAX_PACKET_SIZE(max_packet_size)
-    , m_stream(0), m_auto_close(true), m_extract_last(extract_last) 
+    , m_stream(0), m_auto_close(true), m_extract_last(extract_last)
 {
     if(MAX_PACKET_SIZE <= 0)
         std::runtime_error("Driver: max_packet_size cannot be smaller or equal to 0!");
@@ -307,7 +307,7 @@ static int createIPClientSocket(const char *hostname, const char *port, addrinfo
     if (addr_len != NULL) *addr_len = rp->ai_addrlen;
 
     freeaddrinfo(result);
-    
+
     return sfd;
 }
 
@@ -345,7 +345,7 @@ void Driver::openUDP(std::string const& hostname, int port)
         hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
         hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
         hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
-        
+
         int sfd = createIPServerSocket(port, hints);
         setMainStream(new UDPServerStream(sfd,true));
     }
@@ -375,7 +375,7 @@ void Driver::openUDPBidirectional(std::string const& hostname, int out_port, int
     struct sockaddr peer;
     size_t peer_len;
     int peerfd = createIPClientSocket(hostname.c_str(), boost::lexical_cast<string>(out_port).c_str(), out_hints, &peer, &peer_len);
-    ::close(peerfd);    
+    ::close(peerfd);
 
     int sfd = createIPServerSocket(in_port, in_hints);
     setMainStream(new UDPServerStream(sfd, true, &peer, &peer_len));
@@ -479,9 +479,9 @@ bool Driver::setSerialBaudrate(int fd, int brate) {
 	ss.custom_divisor = (ss.baud_base + (brate / 2)) / brate;
 	int closestSpeed = ss.baud_base / ss.custom_divisor;
 
-	if (closestSpeed < brate * 98 / 100 || closestSpeed > brate * 102 / 100) 
+	if (closestSpeed < brate * 98 / 100 || closestSpeed > brate * 102 / 100)
 	{
-	    std::cerr << "Cannot set custom serial rate to " << brate 
+	    std::cerr << "Cannot set custom serial rate to " << brate
 		<< ". The closest possible value is " << closestSpeed << "."
 		<< std::endl;
 	}
@@ -495,22 +495,22 @@ bool Driver::setSerialBaudrate(int fd, int brate) {
 
     struct termios termios_p;
     if(tcgetattr(fd, &termios_p)){
-        perror("Failed to get terminal info \n");    
+        perror("Failed to get terminal info \n");
         return false;
     }
 
     if(cfsetispeed(&termios_p, tc_rate)){
-        perror("Failed to set terminal input speed \n");    
+        perror("Failed to set terminal input speed \n");
         return false;
     }
 
     if(cfsetospeed(&termios_p, tc_rate)){
-        perror("Failed to set terminal output speed \n");    
+        perror("Failed to set terminal output speed \n");
         return false;
     }
 
     if(tcsetattr(fd, TCSANOW, &termios_p)) {
-        perror("Failed to set speed \n");    
+        perror("Failed to set speed \n");
         return false;
     }
     return true;
@@ -526,13 +526,13 @@ std::pair<uint8_t const*, int> Driver::findPacket(uint8_t const* buffer, int buf
 {
     int packet_start = 0, packet_size = 0;
     int extract_result = extractPacket(buffer, buffer_size);
-    
+
     // make sure the returned packet size is not longer than
     // the buffer
     if( extract_result > buffer_size )
         throw length_error("extractPacket() returned result size "
-                + boost::lexical_cast<string>(extract_result) 
-                + ", which is larger than the buffer size " 
+                + boost::lexical_cast<string>(extract_result)
+                + ", which is larger than the buffer size "
                 + boost::lexical_cast<string>(buffer_size) + ".");
 
     if (0 == extract_result)
@@ -545,7 +545,7 @@ std::pair<uint8_t const*, int> Driver::findPacket(uint8_t const* buffer, int buf
 
     if (m_extract_last)
     {
-        m_stats.stamp = base::Time::now();
+        m_stats.stamp = ros::Time::now();
         m_stats.bad_rx  += packet_start;
         m_stats.good_rx += packet_size;
     }
@@ -585,7 +585,7 @@ int Driver::doPacketExtraction(uint8_t* buffer)
     pair<uint8_t const*, int> packet = findPacket(internal_buffer, internal_buffer_size);
     if (!m_extract_last)
     {
-        m_stats.stamp = base::Time::now();
+        m_stats.stamp = ros::Time::now();
         m_stats.bad_rx  += packet.first - internal_buffer;
         m_stats.good_rx += packet.second;
     }
@@ -642,7 +642,7 @@ pair<int, bool> Driver::readPacketInternal(uint8_t* buffer, int out_buffer_size)
         if (c > 0) {
             for (set<IOListener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
                 (*it)->readData(internal_buffer + internal_buffer_size, c);
-	  
+
             received_something = true;
 
             // cerr << "received: " << printable_com(buffer + buffer_size, c) << endl;
@@ -676,25 +676,25 @@ bool Driver::hasPacket() const
     return (packet.second > 0);
 }
 
-void Driver::setReadTimeout(base::Time const& timeout)
+void Driver::setReadTimeout(ros::Duration const& timeout)
 { m_read_timeout = timeout; }
-base::Time Driver::getReadTimeout() const
+ros::Duration Driver::getReadTimeout() const
 { return m_read_timeout; }
 int Driver::readPacket(uint8_t* buffer, int buffer_size)
 {
     return readPacket(buffer, buffer_size, getReadTimeout());
 }
 int Driver::readPacket(uint8_t* buffer, int buffer_size,
-        base::Time const& packet_timeout)
+        ros::Duration const& packet_timeout)
 {
     return readPacket(buffer, buffer_size, packet_timeout,
-            packet_timeout + base::Time::fromSeconds(1));
+            packet_timeout + ros::Duration(1.0));
 }
 int Driver::readPacket(uint8_t* buffer, int buffer_size,
-        base::Time const& packet_timeout, base::Time const& first_byte_timeout)
+        ros::Duration const& packet_timeout, ros::Duration const& first_byte_timeout)
 {
-    return readPacket(buffer, buffer_size, packet_timeout.toMilliseconds(), 
-            first_byte_timeout.toMilliseconds());
+    return readPacket(buffer, buffer_size, packet_timeout.toSec() * 1000L,
+            first_byte_timeout.toSec() * 1000L);
 }
 int Driver::readPacket(uint8_t* buffer, int buffer_size, int packet_timeout, int first_byte_timeout)
 {
@@ -724,13 +724,13 @@ int Driver::readPacket(uint8_t* buffer, int buffer_size, int packet_timeout, int
     Timeout time_out;
     bool read_something = false;
     while(true) {
-	
+
         pair<int, bool> read_state = readPacketInternal(buffer, buffer_size);
-            
+
         int packet_size = read_state.first;
-            
+
         read_something = read_something || read_state.second;
-        
+
         if (packet_size > 0)
             return packet_size;
 
@@ -764,7 +764,7 @@ int Driver::readPacket(uint8_t* buffer, int buffer_size, int packet_timeout, int
         try {
             // calls select and waits until a new read can be actually performed (in the next
             // while-iteration)
-            m_stream->waitRead(base::Time::fromMicroseconds(remaining_timeout * 1000));
+            m_stream->waitRead(ros::Duration(remaining_timeout / (double)1000.0));
         }
         catch(TimeoutError& e)
         {
@@ -776,22 +776,22 @@ int Driver::readPacket(uint8_t* buffer, int buffer_size, int packet_timeout, int
     }
 }
 
-void Driver::setWriteTimeout(base::Time const& timeout)
+void Driver::setWriteTimeout(ros::Duration const& timeout)
 { m_write_timeout = timeout; }
-base::Time Driver::getWriteTimeout() const
+ros::Duration Driver::getWriteTimeout() const
 { return m_write_timeout; }
 
 bool Driver::writePacket(uint8_t const* buffer, int buffer_size)
 {
-    return writePacket(buffer, buffer_size, getWriteTimeout());
+  return writePacket(buffer, buffer_size, getWriteTimeout());
 }
-bool Driver::writePacket(uint8_t const* buffer, int buffer_size, base::Time const& timeout)
-{ return writePacket(buffer, buffer_size, timeout.toMilliseconds()); }
+bool Driver::writePacket(uint8_t const* buffer, int buffer_size, ros::Duration const& timeout)
+{ return writePacket(buffer, buffer_size, timeout.toSec() * 1000L); }
 bool Driver::writePacket(uint8_t const* buffer, int buffer_size, int timeout)
 {
     if(!m_stream)
         throw std::runtime_error("Driver::writePacket : invalid stream, did you forget to call open ?");
-    
+
     Timeout time_out(timeout);
     int written = 0;
     while(true) {
@@ -801,16 +801,16 @@ bool Driver::writePacket(uint8_t const* buffer, int buffer_size, int timeout)
         written += c;
 
         if (written == buffer_size) {
-            m_stats.stamp = base::Time::now();
-	    m_stats.tx += buffer_size;
+            m_stats.stamp = ros::Time::now();
+	          m_stats.tx += buffer_size;
             return true;
         }
-        
+
         if (time_out.elapsed())
             throw TimeoutError(TimeoutError::PACKET, "writePacket(): timeout");
 
         int remaining_timeout = time_out.timeLeft();
-        m_stream->waitWrite(base::Time::fromMicroseconds(remaining_timeout * 1000));
+        m_stream->waitWrite(ros::Duration(remaining_timeout / (double)1000.0));
     }
 }
 

@@ -1,7 +1,8 @@
-#include <iodrivers_base/Driver.hpp>
+#include <ros_driver_base/driver.hpp>
 #include <netinet/in.h>
+#include <ros/time.h>
 
-namespace iodrivers_base{
+namespace ros_driver_base{
 
 /**
  * This class implements an TCP Server for single Client
@@ -10,13 +11,13 @@ namespace iodrivers_base{
  * for more than one client
  */
 
-class TCPDriver : public iodrivers_base::Driver {
+class TCPDriver : public ros_driver_base::Driver {
     public:
 
         TCPDriver(int max_packet_size, bool extract_last = false);
         virtual ~TCPDriver();
-        
-        
+
+
         /**
          * Initialized an new soked so that an TCP client can connect to the given port,
          * connection is not established by this mehtod, you need to call read or write packed
@@ -25,15 +26,15 @@ class TCPDriver : public iodrivers_base::Driver {
         void tcp_server_init(int port);
 
         /**
-         * Overloaded method from iodriver_base::Driver, additionally calls checkClientConntion();
+         * Overloaded method from ros_driver_base::Driver, additionally calls checkClientConntion();
          */
         virtual int readPacket(uint8_t* buffer, int bufsize);
-        virtual int readPacket(uint8_t* buffer, int bufsize, base::Time const& packet_timeout, base::Time const& first_byte_timeout);
-        
+        virtual int readPacket(uint8_t* buffer, int bufsize, ros::Duration const& packet_timeout, ros::Duration const& first_byte_timeout);
+
         /**
-         * Overloaded method from iodriver_base::Driver, additionally calls checkClientConntion();
+         * Overloaded method from ros_driver_base::Driver, additionally calls checkClientConntion();
          */
-        virtual bool writePacket(uint8_t const* buffer, int bufsize, base::Time const& timeout);
+        virtual bool writePacket(uint8_t const* buffer, int bufsize, ros::Duration const& timeout);
 
         bool hasOpenSocked() const{
             return socked_fd;
@@ -55,7 +56,7 @@ class TCPDriver : public iodrivers_base::Driver {
         int socked_fd;
 
         /*
-         * this member could be also handled by the Driver class itsel, but not sure what the Driver do internally, 
+         * this member could be also handled by the Driver class itsel, but not sure what the Driver do internally,
          * so keep this member for know inside of this class
          */
         int client_fd;
@@ -64,7 +65,7 @@ class TCPDriver : public iodrivers_base::Driver {
          * Internal members to handle the connection
          */
         struct sockaddr_in cli_addr;
-        
+
         /**
          * Internal members to handle the connection
          */

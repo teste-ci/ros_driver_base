@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>ros_driver_base</name>
+    <description>
+        This library contains a generic implementation of (i) timeout-based
+        non-blocking I/O and (ii) packet-reassembly code. It allows to write a
+        driver that will timeout on read and/or write, and to generically do
+        packet extraction in the I/O stream.
+    </description>
+    <maintainer email="gabriel.arjones@fieb.org.br">Gabriel Arjones</maintainer>
+    <license>LGPL v2 or later</license>
+    <url></url>
+    <version>0.0.1</version>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <depend>boost</depend>>
+    <depend>rostime</depend>
+    <depend>rosconsole</depend>
+    <test_depend>gtest</test_depend>>
+    <test_depend>google-mock</test_depend>
+</package>

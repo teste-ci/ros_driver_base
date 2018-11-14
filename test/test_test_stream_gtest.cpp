@@ -1,16 +1,17 @@
 #include <gtest/gtest.h>
 #include <gtest/gtest-spi.h>
-#include <iodrivers_base/Driver.hpp>
-#include <iodrivers_base/FixtureGTest.hpp>
-#include <iodrivers_base/Exceptions.hpp>
+#include <ros_driver_base/driver.hpp>
+#include <ros_driver_base/fixture_gtest.hpp>
+#include <ros_driver_base/exceptions.hpp>
+#include <time.h>
 
 using namespace std;
 
-struct Driver : iodrivers_base::Driver
+struct Driver : ros_driver_base::Driver
 {
 public:
     Driver()
-        : iodrivers_base::Driver(100) {}
+        : ros_driver_base::Driver(100) {}
 
     int extractPacket(uint8_t const* buffer, size_t size) const
     {
@@ -18,22 +19,22 @@ public:
     }
 };
 
-struct DriverTest : public ::testing::Test, public iodrivers_base::Fixture<Driver>
+struct DriverTest : public ::testing::Test, public ros_driver_base::Fixture<Driver>
 {
     DriverTest()
     {
         driver.openURI("test://");
     }
-    
+
     virtual void TearDown()
     {
     }
-   
+
 };
 
 TEST_F(DriverTest, it_matches_expecation_with_data_sent_to_device)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp[] = { 0, 1, 2, 3 };
     uint8_t rep[] = { 3, 2, 1, 0 };
     EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -44,13 +45,13 @@ TEST_F(DriverTest, it_matches_expecation_with_data_sent_to_device)
 
 TEST_F(DriverTest, it_fails_expecation_with_data_sent_to_device)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp[] = { 0, 1, 2, 3 };
     uint8_t msg[] = { 0, 1, 2, 4 };
     uint8_t rep[] = { 3, 2, 1, 0 };
     EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
-    EXPECT_THROW(writePacket(msg,4), invalid_argument); 
-    
+    EXPECT_THROW(writePacket(msg,4), invalid_argument);
+
 }
 
 TEST_F(DriverTest, it_tries_to_set_expectation_without_calling_mock_context)
@@ -62,7 +63,7 @@ TEST_F(DriverTest, it_tries_to_set_expectation_without_calling_mock_context)
 
 TEST_F(DriverTest, it_matches_expecation_more_than_one_expecation)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp1[] = { 0, 1, 2, 3 };
     uint8_t rep1[] = { 3, 2, 1, 0 };
     uint8_t exp2[] = { 0, 1, 2, 3, 4 };
@@ -72,7 +73,7 @@ TEST_F(DriverTest, it_matches_expecation_more_than_one_expecation)
     writePacket(exp1,4);
     vector<uint8_t> received_1 = readPacket();
     ASSERT_EQ(received_1, vector<uint8_t>(rep1,rep1+4));
-    
+
     writePacket(exp2,5);
     vector<uint8_t> received_2 = readPacket();
     for(size_t i =0; i<received_2.size(); i++)
@@ -81,7 +82,7 @@ TEST_F(DriverTest, it_matches_expecation_more_than_one_expecation)
 
 TEST_F(DriverTest, it_does_not_matches_all_expecations)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp1[] = { 0, 1, 2, 3 };
     uint8_t rep1[] = { 3, 2, 1, 0 };
     uint8_t exp2[] = { 0, 1, 2, 3, 4 };
@@ -91,13 +92,13 @@ TEST_F(DriverTest, it_does_not_matches_all_expecations)
     writePacket(exp1,4);
     vector<uint8_t> received_1 = readPacket();
     ASSERT_EQ(received_1, vector<uint8_t>(rep1,rep1+4));
-    EXPECT_NONFATAL_FAILURE(__context.tearDown(),"IODRIVERS_BASE_MOCK Error: Test reached its end without satisfying all expecations.");
+    EXPECT_NONFATAL_FAILURE(__context.tearDown(),"ROS_DRIVER_BASE_MOCK Error: Test reached its end without satisfying all expecations.");
     clearExpectations();
 }
 
 TEST_F(DriverTest ,it_sends_more_messages_than_expecations_set)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp1[] = { 0, 1, 2, 3 };
     uint8_t rep1[] = { 3, 2, 1, 0 };
     uint8_t exp2[] = { 0, 1, 2, 3, 4 };
@@ -105,13 +106,13 @@ TEST_F(DriverTest ,it_sends_more_messages_than_expecations_set)
     writePacket(exp1,4);
     vector<uint8_t> received_1 = readPacket();
     ASSERT_EQ(received_1, vector<uint8_t>(rep1,rep1+4));
-    
+
     ASSERT_THROW(writePacket(exp2,5),runtime_error);
 }
 
 TEST_F(DriverTest, mock_modes_can_be_used_in_sequence)
 {
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 0, 1, 2, 3 };
         uint8_t rep[] = { 3, 2, 1, 0 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -120,7 +121,7 @@ TEST_F(DriverTest, mock_modes_can_be_used_in_sequence)
         ASSERT_EQ(received, vector<uint8_t>(rep,rep+4));
     }
 
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 3, 2, 1, 0 };
         uint8_t rep[] = { 0, 1, 2, 3 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -132,7 +133,7 @@ TEST_F(DriverTest, mock_modes_can_be_used_in_sequence)
 
 TEST_F(DriverTest, mock_modes_can_be_followed_by_raw_write)
 {
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 0, 1, 2, 3 };
         uint8_t rep[] = { 3, 2, 1, 0 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -149,7 +150,7 @@ TEST_F(DriverTest, mock_modes_can_be_followed_by_raw_write)
 
 TEST_F(DriverTest, mock_modes_can_be_followed_by_raw_read)
 {
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 0, 1, 2, 3 };
         uint8_t rep[] = { 3, 2, 1, 0 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -168,7 +169,7 @@ TEST_F(DriverTest, quitting_the_mock_mode_does_not_clear_the_data_unread_by_the_
 {
     uint8_t rep[] = { 3, 2, 1, 0 };
 
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 0, 1, 2, 3 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
         writePacket(exp,4);
@@ -186,13 +187,13 @@ struct DriverClassNameDriver : Driver
     }
 };
 
-struct DriverClassNameTestFixture : ::testing::Test, iodrivers_base::Fixture<DriverClassNameDriver>
+struct DriverClassNameTestFixture : ::testing::Test, ros_driver_base::Fixture<DriverClassNameDriver>
 {
 };
 
 TEST_F(DriverClassNameTestFixture, the_mock_mode_can_be_used_with_a_driver_class_not_called_Driver)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp[] = { 0, 1, 2, 3 };
     uint8_t rep[] = { 3, 2, 1, 0 };
     EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -219,12 +220,12 @@ struct openURIMockTestDriver : public Driver
     }
 };
 
-struct openURIMockTestFixture : ::testing::Test, iodrivers_base::Fixture<openURIMockTestDriver>
+struct openURIMockTestFixture : ::testing::Test, ros_driver_base::Fixture<openURIMockTestDriver>
 {
 };
 
 TEST_F(openURIMockTestFixture, the_mock_mode_can_be_used_to_test_openURI_itself)
-{ IODRIVERS_BASE_MOCK();
+{ ROS_DRIVER_BASE_MOCK();
     uint8_t data[] = { 0, 1, 2, 3 };
     vector<uint8_t> packet(data, data + 4);
     EXPECT_REPLY(packet, packet);
@@ -234,5 +235,6 @@ TEST_F(openURIMockTestFixture, the_mock_mode_can_be_used_to_test_openURI_itself)
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
+    ros::Time::init();
     return RUN_ALL_TESTS();
 }

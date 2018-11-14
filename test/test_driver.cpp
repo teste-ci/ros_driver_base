@@ -5,17 +5,22 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
-#include <iodrivers_base/Driver.hpp>
+#include <ros_driver_base/driver.hpp>
 #include <iostream>
+#include <ros/time.h>
+
 using namespace std;
-using namespace iodrivers_base;
+using namespace ros_driver_base;
+
+struct ROSConfig {
+    ROSConfig()   { ros::Time::init(); }
+};
+BOOST_GLOBAL_FIXTURE(ROSConfig);
 
 class DriverTest : public Driver
 {
 public:
-    DriverTest()
-        : Driver(100) {}
-
+    DriverTest() : Driver(100) {}
     int extractPacket(uint8_t const* buffer, size_t buffer_size) const
     {
         if (buffer[0] != 0)
@@ -61,9 +66,6 @@ BOOST_AUTO_TEST_CASE(test_FileGuard)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
-
-
 
 BOOST_AUTO_TEST_SUITE(DriverSuite)
 

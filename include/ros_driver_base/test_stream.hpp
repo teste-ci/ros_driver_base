@@ -1,13 +1,14 @@
-#ifndef IODRIVERS_BASE_HPP
-#define IODRIVERS_BASE_HPP
+#ifndef ROS_DRIVER_BASE_HPP
+#define ROS_DRIVER_BASE_HPP
 
-#include <iodrivers_base/IOStream.hpp>
+#include <ros_driver_base/io_stream.hpp>
 #include <vector>
 #include <list>
+#include <ros/time.h>
 
-namespace iodrivers_base
+namespace ros_driver_base
 {
-    /** A IOStream meant to be used to test iodrivers_base functionality
+    /** A IOStream meant to be used to test ros_driver_base functionality
      * from outside
      *
      * It maintains two vectors, one the "to device" buffer and one the "from
@@ -22,12 +23,12 @@ namespace iodrivers_base
         std::vector<uint8_t> from_driver;
         std::list<std::vector<uint8_t> > expectations;
         std::list<std::vector<uint8_t> > replies;
-        bool mock_mode;       
+        bool mock_mode;
 
     public:
         TestStream(): mock_mode(false)
         {}
-        
+
         /** Push data to the driver "as-if" it was coming from the device
          */
         void pushDataToDriver(std::vector<uint8_t> const& data);
@@ -41,13 +42,13 @@ namespace iodrivers_base
 
         /**
          * Set a expectation and reply pair and also puts the driver in
-         * mock mode. Should be used after setting up IODRIVERS_BASE_MOCK().
+         * mock mode. Should be used after setting up ROS_DRIVER_BASE_MOCK().
          * @param expecation is the message that is expected to be sent by the driver
          * @param reply reply message to be received by the driver
          */
         void EXPECT_REPLY(std::vector<uint8_t> const& expectation, std::vector<uint8_t> const& reply);
-        void waitRead(base::Time const& timeout);
-        void waitWrite(base::Time const& timeout);
+        void waitRead(ros::Duration const& timeout);
+        void waitWrite(ros::Duration const& timeout);
         size_t read(uint8_t* buffer, size_t buffer_size);
         size_t write(uint8_t const* buffer, size_t buffer_size);
         void clear();

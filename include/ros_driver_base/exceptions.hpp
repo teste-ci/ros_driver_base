@@ -1,11 +1,11 @@
-#ifndef IODRIVERS_BASE_EXCEPTIONS_HPP
-#define IODRIVERS_BASE_EXCEPTIONS_HPP
+#ifndef ROS_DRIVER_BASE_EXCEPTIONS_HPP
+#define ROS_DRIVER_BASE_EXCEPTIONS_HPP
 
 #include <string>
 #include <stdexcept>
-#include <exception>  
+#include <exception>
 
-namespace iodrivers_base
+namespace ros_driver_base
 {
 
 /** Exception raised when a unix error occured in readPacket or writePacket
@@ -33,22 +33,22 @@ struct TimeoutError : std::runtime_error
 
 }
 class MockContextException : public std::exception
-{  
-    public:  
-        const char * what() const throw()  
-        {  
-            return "IODRIVERS_BASE_MOCK Error: Expectation set outside Mock Context! Please call IODRIVERS_BASE_MOCK() before setting expectations";
-        }  
-};  
+{
+    public:
+        const char * what() const throw()
+        {
+            return "ROS_DRIVER_BASE_MOCK Error: Expectation set outside Mock Context! Please call ROS_DRIVER_BASE_MOCK() before setting expectations";
+        }
+};
 
 class TestEndsWithExpectationsLeftException : public std::exception
 {
-       public:  
-        const char * what() const throw()  
-        {  
-            return "IODRIVERS_BASE_MOCK Error: Test reached its end without satisfying all expecations";
-        }  
-};  
-    
+       public:
+        const char * what() const throw()
+        {
+            return "ROS_DRIVER_BASE_MOCK Error: Test reached its end without satisfying all expecations";
+        }
+};
+
 #endif
 

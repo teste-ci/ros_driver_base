@@ -1,13 +1,13 @@
-#ifndef IODRIVERS_BASE_BOOST_FIXTURE_HPP
-#define IODRIVERS_BASE_BOOST_FIXTURE_HPP
+#ifndef ROS_DRIVER_BASE_BOOST_FIXTURE_HPP
+#define ROS_DRIVER_BASE_BOOST_FIXTURE_HPP
 
-#include <iodrivers_base/TestStream.hpp>
+#include <ros_driver_base/test_stream.hpp>
 #include <vector>
-#include <iodrivers_base/Exceptions.hpp>
+#include <ros_driver_base/exceptions.hpp>
 
-namespace iodrivers_base
+namespace ros_driver_base
 {
-    /** A fixture class designed to ease testing of iodrivers_base drivers in
+    /** A fixture class designed to ease testing of ros_driver_base drivers in
      * boost and GTest
      *
      * It creates a given Driver class, which must be opened with the test://
@@ -33,16 +33,16 @@ namespace iodrivers_base
      * In GTest:
      *
      * <code>
-     * struct DriverTest : ::testing::Test, iodrivers_base::Fixture<MyDriver>
+     * struct DriverTest : ::testing::Test, ros_driver_base::Fixture<MyDriver>
      * {
      *    Fixture()
      *    {
      *       // Optional: open here
      *       // driver.openURI("test://")
      *    }
-     *    
+     *
      * }
-     * 
+     *
      * TEST_F(DriverTest, it_handles_an_invalid_packet)
      * {
      *   MyDriver.openURI("test://");
@@ -52,21 +52,21 @@ namespace iodrivers_base
      *   // Check that the packet matches the expected extraction
      * }
      * </code>
-     * 
+     *
      * Mock Mode:
      * To mock the behavior of the device in situations which a reply
-     * is expected, the mock mode should be set, using IODRIVERS_BASE_MOCK().
+     * is expected, the mock mode should be set, using ROS_DRIVER_BASE_MOCK().
      * The expectations are set usint EXPECT_REPLY(expectation, reply) and
      * multiple expecations can be set. The mock will check the expecations and
      * reply in the order that they were defined and will raise an error if
      * any of them is not met. Mock mode is available in both BOOST and GTest
      * Frameworks.
-     * 
+     *
      *<code>
-     *IODRIVER_BASE_MOCK()
+     *ROS_DRIVER_BASE_MOCK()
      *uint8_t exp[] = { 0, 1, 2, 3 };
      *uint8_t rep[] = { 3, 2, 1, 0 };
-     *EXPECT_REPLY(vector<uint8_t>(exp, exp + 4), 
+     *EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),
      *                   vector<uint8_t>(rep, rep + 4));
      *writePacket(exp,4);
      *
@@ -170,7 +170,7 @@ namespace iodrivers_base
 
         /**
          * Check if the test has any expectation set and throw if positive.
-         * It should be used to check if the test reached its end without 
+         * It should be used to check if the test reached its end without
          * any expecation left only
          */
         void validateExpectationsAreEmpty()

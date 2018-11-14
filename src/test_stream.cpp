@@ -1,11 +1,11 @@
-#include <iodrivers_base/TestStream.hpp>
-#include <iodrivers_base/Exceptions.hpp>
+#include <ros_driver_base/test_stream.hpp>
+#include <ros_driver_base/exceptions.hpp>
 #include <cstring>
 #include <sstream>
 #include <iomanip>
 
 using namespace std;
-using namespace iodrivers_base;
+using namespace ros_driver_base;
 
 /** Push data to the driver */
 void TestStream::pushDataToDriver(vector<uint8_t> const& data)
@@ -23,12 +23,12 @@ vector<uint8_t> TestStream::readDataFromDriver()
     return temp;
 }
 
-void TestStream::waitRead(base::Time const& timeout)
+void TestStream::waitRead(ros::Duration const& timeout)
 {
     if (to_driver.empty())
         throw TimeoutError(TimeoutError::NONE, "no data in to_device");
 }
-void TestStream::waitWrite(base::Time const& timeout)
+void TestStream::waitWrite(ros::Duration const& timeout)
 {
 }
 
@@ -74,7 +74,7 @@ size_t TestStream::write(uint8_t const* buffer, size_t buffer_size)
         {
             std::vector<uint8_t> const& expected = expectations.front();
             std::stringstream msg;
-            msg << "IODRIVERS_BASE_MOCK failure";
+            msg << "ROS_DRIVER_BASE_MOCK failure";
             msg << "\nExpected";
             for (std::vector<uint8_t>::const_iterator it = expected.begin(); it != expected.end(); ++it)
                 msg << " " << setfill('0') << setw(2) << hex << static_cast<int>(*it);

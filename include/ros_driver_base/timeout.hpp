@@ -1,9 +1,9 @@
-#ifndef IODRIVERS_BASE_TIMEOUT_HPP
-#define IODRIVERS_BASE_TIMEOUT_HPP
+#ifndef ROS_DRIVER_BASE_TIMEOUT_HPP
+#define ROS_DRIVER_BASE_TIMEOUT_HPP
 
 #include <sys/time.h>
 
-namespace iodrivers_base {
+namespace ros_driver_base {
 
 /** A timeout tracking class
  */

@@ -1,16 +1,16 @@
-#include <iodrivers_base/IOStream.hpp>
-#include <iodrivers_base/Exceptions.hpp>
-#include <base-logging/Logging.hpp>
+#include <ros_driver_base/io_stream.hpp>
+#include <ros_driver_base/exceptions.hpp>
+#include <ros/console.h>
 
-#include <sys/types.h> 
-#include <sys/stat.h> 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 
 #include <errno.h>
 #include <iostream>
 
-using namespace iodrivers_base;
+using namespace ros_driver_base;
 
 IOStream::~IOStream() {}
 int IOStream::getFileDescriptor() const { return FDStream::INVALID_FD; }
@@ -22,7 +22,7 @@ FDStream::FDStream(int fd, bool auto_close)
 {
     if (setNonBlockingFlag(fd))
     {
-        LOG_WARN_S << "FD given to Driver::setFileDescriptor is set as blocking, setting the NONBLOCK flag";
+        ROS_DEBUG("FD given to Driver::setFileDescriptor is set as blocking, setting the NONBLOCK flag");
     }
 }
 FDStream::~FDStream()
@@ -30,26 +30,26 @@ FDStream::~FDStream()
     if (m_auto_close)
         ::close(m_fd);
 }
-void FDStream::waitRead(base::Time const& timeout)
+void FDStream::waitRead(ros::Duration const& timeout)
 {
     fd_set set;
     FD_ZERO(&set);
     FD_SET(m_fd, &set);
 
-    timeval timeout_spec = { static_cast<time_t>(timeout.toSeconds()), suseconds_t(timeout.toMicroseconds() % 1000000)};
+    timeval timeout_spec = { static_cast<time_t>(timeout.toSec()), suseconds_t(timeout.toNSec() / 1000 % 1000000)};
     int ret = select(m_fd + 1, &set, NULL, NULL, &timeout_spec);
     if (ret < 0 && errno != EINTR)
         throw UnixError("waitRead(): error in select()");
     else if (ret == 0)
         throw TimeoutError(TimeoutError::NONE, "waitRead(): timeout");
 }
-void FDStream::waitWrite(base::Time const& timeout)
+void FDStream::waitWrite(ros::Duration const& timeout)
 {
     fd_set set;
     FD_ZERO(&set);
     FD_SET(m_fd, &set);
 
-    timeval timeout_spec = { static_cast<time_t>(timeout.toSeconds()), suseconds_t(timeout.toMicroseconds() % 1000000) };
+    timeval timeout_spec = { static_cast<time_t>(timeout.toSec()), suseconds_t(timeout.toNSec() / 1000 % 1000000) };
     int ret = select(m_fd + 1, NULL, &set, NULL, &timeout_spec);
     if (ret < 0 && errno != EINTR)
         throw UnixError("waitWrite(): error in select()");

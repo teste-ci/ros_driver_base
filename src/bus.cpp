@@ -1,9 +1,9 @@
-#include <iodrivers_base/Bus.hpp>
+#include <ros_driver_base/bus.hpp>
 #include <stdlib.h>
 
 #include <boost/thread/locks.hpp>
 
-using namespace iodrivers_base;
+using namespace ros_driver_base;
 
 Parser::Parser(Bus *bus):
 	bus(bus)
@@ -13,7 +13,7 @@ Parser::Parser(Bus *bus):
 int Parser::readPacket(uint8_t* buffer, int buffer_size, int packet_timeout, int first_byte_timeout){
 	return bus->readPacket(buffer,buffer_size, packet_timeout, first_byte_timeout,this);
 }
-    	
+
 bool Parser::writePacket(uint8_t const* buffer, int bufsize, int timeout){
 	return bus->writePacket(buffer,bufsize,timeout);
 }
@@ -44,7 +44,7 @@ Bus::Bus(int max_packet_size, bool extract_last):
 
 typedef boost::lock_guard<boost::recursive_mutex> LockGuard;
 
-void Bus::addParser(Parser *parser){	
+void Bus::addParser(Parser *parser){
         LockGuard guard(mutex);
 	this->parser.push_back(parser);
 }
@@ -56,7 +56,7 @@ void Bus::removeParser(Parser *parser){
 
 bool Bus::writePacket(uint8_t const* buffer, int buffer_size, int timeout){
         LockGuard guard(mutex);
-        return Driver::writePacket(buffer, buffer_size, timeout); 
+        return Driver::writePacket(buffer, buffer_size, timeout);
 }
 
 int Bus::readPacket(uint8_t* buffer, int buffer_size, int packet_timeout, int first_byte_timeout, Parser *parser){
@@ -82,7 +82,7 @@ int Bus::extractPacket(uint8_t const* buffer, size_t buffer_size) const{
 	for(std::list<Parser*>::const_iterator it = parser.begin();it != parser.end();it++){
 		int tmp = (*it)->extractPacket(buffer,buffer_size);
 		if(tmp > 0){
-			BusHandler *handler = dynamic_cast<BusHandler*>(*it);	
+			BusHandler *handler = dynamic_cast<BusHandler*>(*it);
 			if(handler)
 				handler->packedReady(buffer,minSkip);
 		}

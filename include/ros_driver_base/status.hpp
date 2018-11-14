@@ -1,13 +1,13 @@
-#ifndef IODRIVERS_BASE_STATUS_HPP
-#define IODRIVERS_BASE_STATUS_HPP
+#ifndef ROS_DRIVER_BASE_STATUS_HPP
+#define ROS_DRIVER_BASE_STATUS_HPP
 
-#include <base/Time.hpp>
+#include <ros/time.h>
 
-namespace iodrivers_base {
+namespace ros_driver_base {
     /** This structure holds IO statistics */
     struct Status
     {
-        base::Time stamp;
+        ros::Time stamp;
 
 	unsigned int tx; //! count of bytes received
 	unsigned int good_rx; //! count of bytes received and accepted

@@ -1,12 +1,12 @@
-#ifndef IODRIVERS_BASE_BUS_HH
-#define IODRIVERS_BASE_BUS_HH
+#ifndef ROS_DRIVER_BASE_BUS_HH
+#define ROS_DRIVER_BASE_BUS_HH
 
-#include <iodrivers_base/Driver.hpp>
+#include <ros_driver_base/driver.hpp>
 #include <list>
 #include <inttypes.h>
 #include <boost/thread/recursive_mutex.hpp>
 
-namespace iodrivers_base {
+namespace ros_driver_base {
 class Bus;
 
 /**
@@ -25,7 +25,7 @@ public:
 
 	/**
 	 * read packed calls the readPacked from IOBus, if this readPacked is used only the extract packed
-	 * from this Device is called, other device-extractors are not involved, to no call to packedReady 
+	 * from this Device is called, other device-extractors are not involved, to no call to packedReady
 	 * (see IOBusHandler) is done. If youre devices not request->answer like you need to use the IOBusHandler,
 	 * and call the readPacked from IOBus.
 	 */
@@ -44,8 +44,8 @@ protected:
 
 
 /**
- * This class Extends the Parser, this class should be inherit for all devices that send periodicly 
- * data to the bus, and are not request->answer based. 
+ * This class Extends the Parser, this class should be inherit for all devices that send periodicly
+ * data to the bus, and are not request->answer based.
  * In case an Parser detects an packed for this Device, the function packedReady get's call IF this class is registered to
  * the Bus.
  */
@@ -56,7 +56,7 @@ public:
 	 */
 	BusHandler(Bus *bus, bool auto_register=true);
 	~BusHandler();
-	
+
 	/**
 	 * see IODriver
 	 */

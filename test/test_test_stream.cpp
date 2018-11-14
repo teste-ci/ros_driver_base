@@ -1,30 +1,30 @@
 #include <boost/test/unit_test.hpp>
 
-#include <iodrivers_base/Driver.hpp>
-#include <iodrivers_base/FixtureBoostTest.hpp>
-#include <iodrivers_base/Exceptions.hpp>
+#include <ros_driver_base/driver.hpp>
+#include <ros_driver_base/fixture_boost_test.hpp>
+#include <ros_driver_base/exceptions.hpp>
 
-using namespace iodrivers_base;
+using namespace ros_driver_base;
 using namespace std;
 
 BOOST_AUTO_TEST_SUITE(TestStreamSuite)
 
-struct Driver : iodrivers_base::Driver
+struct Driver : ros_driver_base::Driver
 {
 public:
     Driver()
-        : iodrivers_base::Driver(100) {}
+        : ros_driver_base::Driver(100) {}
 
     vector<uint8_t> openURIData;
 
     void openURI(string const& uri)
     {
-        iodrivers_base::Driver::openURI(uri);
+        ros_driver_base::Driver::openURI(uri);
         uint8_t buffer[100];
         try {
             size_t packet_size = readPacket(buffer, 100);
             openURIData = vector<uint8_t>(buffer, buffer + packet_size);
-        } catch (iodrivers_base::TimeoutError) {
+        } catch (ros_driver_base::TimeoutError) {
         }
     }
 
@@ -34,7 +34,7 @@ public:
     }
 };
 
-struct Fixture : iodrivers_base::Fixture<Driver>
+struct Fixture : ros_driver_base::Fixture<Driver>
 {
     Fixture()
     {
@@ -42,7 +42,7 @@ struct Fixture : iodrivers_base::Fixture<Driver>
     }
 };
 
-struct FixtureNoOpen : iodrivers_base::Fixture<Driver>
+struct FixtureNoOpen : ros_driver_base::Fixture<Driver>
 {
 };
 
@@ -115,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE(it_does_not_repeat_data_already_read_from_the_device, Fi
 
 BOOST_FIXTURE_TEST_CASE(it_matches_expecation_with_data_sent_to_device, Fixture)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp[] = { 0, 1, 2, 3 };
     uint8_t rep[] = { 3, 2, 1, 0 };
     EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -126,13 +126,13 @@ BOOST_FIXTURE_TEST_CASE(it_matches_expecation_with_data_sent_to_device, Fixture)
 
 BOOST_FIXTURE_TEST_CASE(it_fails_expecation_with_data_sent_to_device, Fixture)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp[] = { 0, 1, 2, 3 };
     uint8_t msg[] = { 0, 1, 2, 4 };
     uint8_t rep[] = { 3, 2, 1, 0 };
     EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
-    BOOST_REQUIRE_THROW(writePacket(msg,4), invalid_argument); 
-    
+    BOOST_REQUIRE_THROW(writePacket(msg,4), invalid_argument);
+
 }
 
 BOOST_FIXTURE_TEST_CASE(it_tries_to_set_expectation_without_calling_mock_context, Fixture)
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(it_tries_to_set_expectation_without_calling_mock_context
 
 BOOST_FIXTURE_TEST_CASE(it_matches_more_than_one_expecation, Fixture)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp1[] = { 0, 1, 2, 3 };
     uint8_t rep1[] = { 3, 2, 1, 0 };
     uint8_t exp2[] = { 0, 1, 2, 3, 4 };
@@ -154,7 +154,7 @@ BOOST_FIXTURE_TEST_CASE(it_matches_more_than_one_expecation, Fixture)
     writePacket(exp1,4);
     vector<uint8_t> received_1 = readPacket();
     BOOST_REQUIRE(received_1 == vector<uint8_t>(rep1,rep1+4));
-    
+
     writePacket(exp2,5);
     vector<uint8_t> received_2 = readPacket();
     for(size_t i =0; i<received_2.size(); i++)
@@ -163,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE(it_matches_more_than_one_expecation, Fixture)
 
 BOOST_FIXTURE_TEST_CASE(it_does_not_matches_all_expecations, Fixture)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp1[] = { 0, 1, 2, 3 };
     uint8_t rep1[] = { 3, 2, 1, 0 };
     uint8_t exp2[] = { 0, 1, 2, 3, 4 };
@@ -179,7 +179,7 @@ BOOST_FIXTURE_TEST_CASE(it_does_not_matches_all_expecations, Fixture)
 
 BOOST_FIXTURE_TEST_CASE(it_sends_more_messages_than_expecations_set, Fixture)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp1[] = { 0, 1, 2, 3 };
     uint8_t rep1[] = { 3, 2, 1, 0 };
     uint8_t exp2[] = { 0, 1, 2, 3, 4 };
@@ -187,13 +187,13 @@ BOOST_FIXTURE_TEST_CASE(it_sends_more_messages_than_expecations_set, Fixture)
     writePacket(exp1,4);
     vector<uint8_t> received_1 = readPacket();
     BOOST_REQUIRE(received_1 == vector<uint8_t>(rep1,rep1+4));
-    
+
     BOOST_REQUIRE_THROW(writePacket(exp2,5),runtime_error);
 }
 
 BOOST_FIXTURE_TEST_CASE(mock_modes_can_be_used_in_sequence, Fixture)
 {
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 0, 1, 2, 3 };
         uint8_t rep[] = { 3, 2, 1, 0 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -202,7 +202,7 @@ BOOST_FIXTURE_TEST_CASE(mock_modes_can_be_used_in_sequence, Fixture)
         BOOST_REQUIRE(received == vector<uint8_t>(rep,rep+4));
     }
 
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 3, 2, 1, 0 };
         uint8_t rep[] = { 0, 1, 2, 3 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -214,7 +214,7 @@ BOOST_FIXTURE_TEST_CASE(mock_modes_can_be_used_in_sequence, Fixture)
 
 BOOST_FIXTURE_TEST_CASE(mock_modes_can_be_followed_by_raw_write, Fixture)
 {
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 0, 1, 2, 3 };
         uint8_t rep[] = { 3, 2, 1, 0 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -231,7 +231,7 @@ BOOST_FIXTURE_TEST_CASE(mock_modes_can_be_followed_by_raw_write, Fixture)
 
 BOOST_FIXTURE_TEST_CASE(mock_modes_can_be_followed_by_raw_read, Fixture)
 {
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 0, 1, 2, 3 };
         uint8_t rep[] = { 3, 2, 1, 0 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -250,7 +250,7 @@ BOOST_FIXTURE_TEST_CASE(quitting_the_mock_mode_does_not_clear_the_data_unread_by
 {
     uint8_t rep[] = { 3, 2, 1, 0 };
 
-    { IODRIVERS_BASE_MOCK();
+    { ROS_DRIVER_BASE_MOCK();
         uint8_t exp[] = { 0, 1, 2, 3 };
         EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
         writePacket(exp,4);
@@ -268,13 +268,13 @@ struct DriverClassNameDriver : Driver
     }
 };
 
-struct DriverClassNameTestFixture : iodrivers_base::Fixture<DriverClassNameDriver>
+struct DriverClassNameTestFixture : ros_driver_base::Fixture<DriverClassNameDriver>
 {
 };
 
 BOOST_FIXTURE_TEST_CASE(the_mock_mode_can_be_used_with_a_driver_class_not_called_Driver, DriverClassNameTestFixture)
 {
-    IODRIVERS_BASE_MOCK();
+    ROS_DRIVER_BASE_MOCK();
     uint8_t exp[] = { 0, 1, 2, 3 };
     uint8_t rep[] = { 3, 2, 1, 0 };
     EXPECT_REPLY(vector<uint8_t>(exp, exp + 4),vector<uint8_t>(rep, rep + 4));
@@ -301,12 +301,12 @@ struct openURIMockTestDriver : public Driver
     }
 };
 
-struct openURIMockTestFixture : iodrivers_base::Fixture<openURIMockTestDriver>
+struct openURIMockTestFixture : ros_driver_base::Fixture<openURIMockTestDriver>
 {
 };
 
 BOOST_FIXTURE_TEST_CASE(the_mock_mode_can_be_used_to_test_openURI_itself, openURIMockTestFixture)
-{ IODRIVERS_BASE_MOCK();
+{ ROS_DRIVER_BASE_MOCK();
     uint8_t data[] = { 0, 1, 2, 3 };
     vector<uint8_t> packet(data, data + 4);
     EXPECT_REPLY(packet, packet);

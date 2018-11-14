@@ -1,5 +1,5 @@
-#ifndef IODRIVERS_BASE_DRIVER_HH
-#define IODRIVERS_BASE_DRIVER_HH
+#ifndef ROS_DRIVER_BASE_DRIVER_HH
+#define ROS_DRIVER_BASE_DRIVER_HH
 
 #include <stdexcept>
 #include <stdint.h>
@@ -7,13 +7,14 @@
 #include <unistd.h>
 #include <vector>
 #include <unistd.h>
-#include <iodrivers_base/Status.hpp>
-#include <iodrivers_base/Exceptions.hpp>
+#include <ros_driver_base/status.hpp>
+#include <ros_driver_base/exceptions.hpp>
 #include <set>
+#include <ros/time.h>
 
 struct addrinfo;
 
-namespace iodrivers_base {
+namespace ros_driver_base {
 
 class IOStream;
 class IOListener;
@@ -70,7 +71,7 @@ class Driver
 {
 public:
     /** For backward compatibility only */
-    typedef iodrivers_base::Status Statistics;
+    typedef ros_driver_base::Status Statistics;
 
     static const int INVALID_FD = -1;
 
@@ -109,13 +110,13 @@ protected:
      *
      * @see getReadTimeout setReadTimeout readPacket
      */
-    base::Time m_read_timeout;
+    ros::Duration m_read_timeout;
 
     /** Default write timeout for writePacket
      *
      * @see getWriteTimeout setWriteTimeout writePacket
      */
-    base::Time m_write_timeout;
+    ros::Duration m_write_timeout;
 
     /** Internal helper method for readPacket. This one is purely
      * non-blocking.
@@ -173,18 +174,18 @@ public:
     /** Sets the default read timeout in milliseconds. Used in readPacket calls
      * without timeout parameters
      */
-    void setReadTimeout(base::Time const& t);
+    void setReadTimeout(ros::Duration const& t);
 
     /** Get the default read timeout */
-    base::Time getReadTimeout() const;
+    ros::Duration getReadTimeout() const;
 
     /** Sets the default write timeout in milliseconds. Used in writePacket calls
      * without timeout parameters
      */
-    void setWriteTimeout(base::Time const& t);
+    void setWriteTimeout(ros::Duration const& t);
 
     /** Get the default read timeout */
-    base::Time getWriteTimeout() const;
+    ros::Duration getWriteTimeout() const;
 
     /** Removes all data that is pending on the file descriptor */
     void clear();
@@ -231,19 +232,19 @@ public:
      * * udpserver://port
      */
     virtual void openURI(std::string const& uri);
-    
+
     /**
     * @deprecated
-    * 
+    *
     * Use openTCP
     */
     bool openInet(const char *hostname, int port);
-    
+
     /**
     * Opens a TCP connection to foreign host,
     */
     void openTCP(std::string const& hostname, int port);
-    
+
     /**
     * Opens a UDP connection
     *
@@ -253,7 +254,7 @@ public:
     * The read_port port can be 0 if the local port does not need to be fixed.
     */
     void openUDP(std::string const& hostname, int remote_port);
-    
+
     /**
     * Opens a UDP connection
     *
@@ -263,7 +264,7 @@ public:
     */
     void openUDPBidirectional(std::string const& hostname, int out_port, int in_port);
 
-    
+
     /** Opens a serial port and sets it up to a sane configuration.  Use
      * then setSerialBaudrate() to change the actual baudrate of the
      * connection on this side.
@@ -359,7 +360,7 @@ public:
      *
      * Calls readPacket without a first byte timeout
      */
-    int readPacket(uint8_t* buffer, int bufsize, base::Time const& packet_timeout);
+    int readPacket(uint8_t* buffer, int bufsize, ros::Duration const& packet_timeout);
 
     /** @overload @deprecated
      *
@@ -386,7 +387,7 @@ public:
      * @throws TimeoutError on timeout or no data, and UnixError on reading problems
      * @returns the size of the packet
      */
-    int readPacket(uint8_t* buffer, int bufsize, base::Time const& packet_timeout, base::Time const& first_byte_timeout);
+    int readPacket(uint8_t* buffer, int bufsize, ros::Duration const& packet_timeout, ros::Duration const& first_byte_timeout);
 
     /** @overload
      *
@@ -405,7 +406,7 @@ public:
      * @throws timeout_error on timeout and unix_error on reading problems
      * @returns always true. The return value is kept for backward compatibility only
      */
-    bool writePacket(uint8_t const* buffer, int bufsize, base::Time const& timeout);
+    bool writePacket(uint8_t const* buffer, int bufsize, ros::Duration const& timeout);
 
     /** Find a packet into the currently accumulated data.
      *

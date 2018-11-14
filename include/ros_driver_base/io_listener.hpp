@@ -1,10 +1,10 @@
-#ifndef IODRIVERS_BASE_DRIVER_HPP
-#define IODRIVERS_BASE_DRIVER_HPP
+#ifndef ROS_DRIVER_BASE_DRIVER_HPP
+#define ROS_DRIVER_BASE_DRIVER_HPP
 
 #include <boost/cstdint.hpp>
 #include <vector>
 
-namespace iodrivers_base
+namespace ros_driver_base
 {
     /** Base class for objects that are 'plugged in' a Driver class and get
      * passed all the data that passes through
