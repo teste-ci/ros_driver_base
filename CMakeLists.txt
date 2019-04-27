@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS rostime rosconsole)
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 catkin_package(
-    INCLUDE_DIRS ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include
+    INCLUDE_DIRS include
     CATKIN_DEPENDS rostime rosconsole
     DEPENDS Boost
     LIBRARIES ${PROJECT_NAME} pthread
