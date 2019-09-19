@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS rostime rosconsole)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
+
 catkin_package(
     INCLUDE_DIRS include
     CATKIN_DEPENDS rostime rosconsole
